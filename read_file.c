@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+int debug = 0;
+
 // Reads entire cartidge file into cart_buffer
 void readCart(unsigned char** cart_buffer){
   FILE * pFile;
@@ -117,19 +119,116 @@ void printMetadata(struct cart_metadata *metadata){
 	printf("More metadata available\n");
 }
 
+/*
+	Memory Idenifiers:
+	11 : Interrupt Enable Register
+	10 : Internal High RAM
+	09 : I/O Ports
+	08 : Empty
+	07 : Sprite Atttribute Table
+	06 : ECHO RAM
+	05 : 4KB Work RAM bank 1~N
+	04 : 4KB Work RAM Bank 0
+	03 : 8kb External Ram (In Cartridge, if any)
+	02 : 8kb Video Ram
+	01 : 16KB ROM BANK 01~NN
+	00 : 16KB ROM BANK 00
+*/
+struct mem_sel{
+	int mem_id;
+	int mem_offset;
+};
 
+struct mem_sel get_mem_info(unsigned int address){
+	struct mem_sel return_data;
+
+	if(address < 0x4000){
+		//00 : 16KB ROM BANK 00
+		return_data.mem_id = 0;
+		return_data.mem_offset = address;
+	}else if(address < 0x8000){
+		//01 : 16KB ROM BANK 01~NN
+		return_data.mem_id = 1;
+		return_data.mem_offset = address-0x4000;
+	}else if(address < 0xA000){
+		//02 : 8kb Video Ram
+		return_data.mem_id = 2;
+		return_data.mem_offset = address-0x8000;
+	}else if(address < 0xC000){
+		//03 : 8kb External Ram (In Cartridge, if any)
+		return_data.mem_id = 3;
+		return_data.mem_offset = address-0xA000;
+	}else if(address < 0xD000){
+		//04 : 4KB Work RAM Bank 0
+		return_data.mem_id = 4;
+		return_data.mem_offset = address-0xC000;
+	}else if(address < 0xE000){
+		//05 : 4KB Work RAM bank 1~N
+		return_data.mem_id = 5;
+		return_data.mem_offset = address-0xD000;
+	}else if(address < 0xFE00){
+		//06 : ECHO RAM
+		return_data.mem_id = 6;
+		return_data.mem_offset = address-0xE000;
+	}else if(address < 0xFEA0){
+		//07 : Sprite Attribute Table
+		return_data.mem_id = 7;
+		return_data.mem_offset = address-0xFE00;
+	}else if(address < 0xFF00){
+		//08 : Not Useable
+		return_data.mem_id = 8;
+		return_data.mem_offset = address-0xFEA0;
+	}else if(address < 0xFF80){
+		//09 : I/O Ports
+		return_data.mem_id = 9;
+		return_data.mem_offset = address-0xFF00;
+	}else if(address < 0xFFFF){
+		//10 : High RAM
+		return_data.mem_id = 10;
+		return_data.mem_offset = address-0xFF80;
+	}else if(address == 0xFFFF){
+		return_data.mem_id = 11;
+		return_data.mem_offset = 0;
+	}else{
+		return_data.mem_id = -1;
+		return_data.mem_id = 0;
+	}
+
+
+	if(debug>0){
+		printf("Accessed Memory with ID:%i and offset:%i\n",return_data.mem_id,return_data.mem_offset);
+	}
+}
+
+
+/*
+	Memory Idenifiers:
+	11 : Interrupt Enable Register
+	10 : Internal High RAM
+	09 : I/O Ports
+	08 : Empty
+	07 : Sprite Atttribute Table
+	06 : ECHO RAM
+	05 : 4KB Work RAM bank 1~N
+	04 : 4KB Work RAM Bank 0
+	03 : 8kb External Ram (In Cartridge, if any)
+	02 : 8kb Video Ram
+	01 : 16KB ROM BANK 01~NN
+	00 : 16KB ROM BANK 00
+*/
 int main () {
+  unsigned char *memoryBank[12];
 
-  unsigned char * cart_buffer;
   struct cart_metadata metadata;
 
-  readCart(&cart_buffer);
-  read_cart_metadata(&cart_buffer,&metadata);
+  // Remember memoryBank[0] is the cartidge bank
+  readCart(&memoryBank[0]);
+  read_cart_metadata(&memoryBank[0],&metadata);
 
   //Testing Purposes Only:
   printMetadata(&metadata);
    
-
-  free (cart_buffer);
+  //Free Cartidge Bank, this will have to act on all memory later
+  free (memoryBank[0]);
   return 0;
 }
