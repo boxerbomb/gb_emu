@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 // Register Names to Register Bank Index
 #define REG_F 0
@@ -291,7 +292,11 @@ uint16_t readRegister16(struct registerBank *bank,int regID){
 	return (*bank).reg_list[regID-8];
 }
 
-void writeRegister(struct registerBank *bank, int regID, uint8_t data){
+void writeRegister16(struct registerBank *bank, int regID, uint16_t data){
+	(*bank).reg_list[regID-8] = data;
+}
+
+void writeRegister8(struct registerBank *bank, int regID, uint8_t data){
 	if(regID<8){
 
 		// 8-bit Register Write
@@ -333,6 +338,7 @@ void writeRegister(struct registerBank *bank, int regID, uint8_t data){
 
 	}else{
 		// 16-bit Register Write
+		printf("16-bit write to\n");
 		(*bank).reg_list[regID-8] = data;
 	}
 }
@@ -340,7 +346,7 @@ void writeRegister(struct registerBank *bank, int regID, uint8_t data){
 void testRegisters(struct registerBank *bank){
 	// Testing Registers (They work)
 	for(uint8_t i=0; i<8; i++){
-		writeRegister(bank, i, i*2);
+		writeRegister8(bank, i, i*2);
 	}
 	for(uint8_t i=0; i<8; i++){
 		printf("%i\n",readRegister8(bank, i));
@@ -348,7 +354,7 @@ void testRegisters(struct registerBank *bank){
 	printf("---------------------\n");
 	// Testing Registers (They work)
 	for(uint8_t i=8; i<14; i++){
-		writeRegister(bank, i, i*2);
+		writeRegister16(bank, i, i*2);
 	}
 	for(uint8_t i=8; i<14; i++){
 		printf("%i\n",readRegister16(bank, i));
@@ -386,12 +392,24 @@ int main () {
 	// Fill metadata object with data from cartidge memory
 	read_cart_metadata(&memoryBank[0],&metadata);
 
+	// Set Program Counter from Metadata
+	// This is a bit of a shortcut, the entrypoint really contains code
+	// In Most cases it is a NOP JMP Low High, though
+	uint16_t init_pc_value = (metadata.entry_point[3]*256)+metadata.entry_point[2];	
+	writeRegister16(&Registers, REG_PC, init_pc_value);
 
-
-
+	// Read Through Entire Cartridge
+	// This will not be the final loop, just for testing purposes
+	while(readRegister16(&Registers,REG_PC)<0x7FFF){
+		uint16_t current_count = readRegister16(&Registers,REG_PC);
+		printf("%X : %X\n",current_count,memoryBank[0][current_count]);
+		current_count++;
+		writeRegister16(&Registers,REG_PC,current_count);
+	}
+	
 	//Testing Purposes Only:
-	testRegisters(&Registers);
-	printMetadata(&metadata);
+	//testRegisters(&Registers);
+	//printMetadata(&metadata);
 
 	//Free Cartidge Bank, this will have to act on all memory later
 	free (memoryBank[0]);
