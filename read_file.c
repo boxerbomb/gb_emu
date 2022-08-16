@@ -384,9 +384,10 @@ struct Instruction{
 	struct Operand *operand0;
 	struct Operand *operand1;
 	bool immediate;
-	uint8_t flags; // Packed into lower 4-bits
+	uint8_t flagset; // Packed into highest 4-bits
+	uint8_t flagreset; // Packed into highest 4-bits
 };
-struct Instruction* new_inst(uint8_t opcode, uint8_t mne_ID, uint8_t bytes, uint8_t cycles, struct Operand* operand0, struct Operand* operand1, bool immediate, uint8_t flags){
+struct Instruction* new_inst(uint8_t opcode, uint8_t mne_ID, uint8_t bytes, uint8_t cycles, struct Operand* operand0, struct Operand* operand1, bool immediate, uint8_t flagset,uint8_t flagreset){
 	struct Instruction* p = malloc(sizeof(struct Instruction));
 	p->opcode = opcode;
 	p->mne_ID = mne_ID;
@@ -395,15 +396,270 @@ struct Instruction* new_inst(uint8_t opcode, uint8_t mne_ID, uint8_t bytes, uint
 	p->operand0 = operand0;
 	p->operand1 = operand1;
 	p->immediate = immediate;
-	p->flags = flags;
+	p->flagset = flagset;
+	p->flagreset = flagreset;
+	return p;
 }
 
 void populate_instructions(struct Instruction **unprefixed_list){
-	*unprefixed_list = (struct Instruction*) malloc (sizeof(struct Instruction)*256);
+	// 99's need to be fixed with appropiate constants in Python
+	(*unprefixed_list)[0] = *new_inst(0x00,0,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[1] = *new_inst(0x01,1,3,12,new_operand(11,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[2] = *new_inst(0x02,1,1,8,new_operand(11,0,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[3] = *new_inst(0x03,2,1,8,new_operand(11,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[4] = *new_inst(0x04,2,1,4,new_operand(5,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[5] = *new_inst(0x05,3,1,4,new_operand(5,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[6] = *new_inst(0x06,1,2,8,new_operand(5,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[7] = *new_inst(0x07,4,1,4,NULL,NULL,true,0b0,0b11100000);
+	(*unprefixed_list)[8] = *new_inst(0x08,1,3,20,new_operand(99,2,false),new_operand(9,0,true),false,0b0,0b0);
+	(*unprefixed_list)[9] = *new_inst(0x09,5,1,8,new_operand(13,0,true),new_operand(11,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[10] = *new_inst(0x0A,1,1,8,new_operand(4,0,true),new_operand(11,0,false),false,0b0,0b0);
+	(*unprefixed_list)[11] = *new_inst(0x0B,3,1,8,new_operand(11,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[12] = *new_inst(0x0C,2,1,4,new_operand(1,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[13] = *new_inst(0x0D,3,1,4,new_operand(1,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[14] = *new_inst(0x0E,1,2,8,new_operand(1,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[15] = *new_inst(0x0F,6,1,4,NULL,NULL,true,0b0,0b11100000);
+	(*unprefixed_list)[16] = *new_inst(0x10,7,2,4,new_operand(99,1,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[17] = *new_inst(0x11,1,3,12,new_operand(12,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[18] = *new_inst(0x12,1,1,8,new_operand(12,0,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[19] = *new_inst(0x13,2,1,8,new_operand(12,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[20] = *new_inst(0x14,2,1,4,new_operand(6,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[21] = *new_inst(0x15,3,1,4,new_operand(6,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[22] = *new_inst(0x16,1,2,8,new_operand(6,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[23] = *new_inst(0x17,8,1,4,NULL,NULL,true,0b0,0b11100000);
+	(*unprefixed_list)[24] = *new_inst(0x18,9,2,12,new_operand(99,1,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[25] = *new_inst(0x19,5,1,8,new_operand(13,0,true),new_operand(12,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[26] = *new_inst(0x1A,1,1,8,new_operand(4,0,true),new_operand(12,0,false),false,0b0,0b0);
+	(*unprefixed_list)[27] = *new_inst(0x1B,3,1,8,new_operand(12,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[28] = *new_inst(0x1C,2,1,4,new_operand(2,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[29] = *new_inst(0x1D,3,1,4,new_operand(2,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[30] = *new_inst(0x1E,1,2,8,new_operand(2,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[31] = *new_inst(0x1F,10,1,4,NULL,NULL,true,0b0,0b11100000);
+	(*unprefixed_list)[32] = *new_inst(0x20,9,2,12,new_operand(99,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[33] = *new_inst(0x21,1,3,12,new_operand(13,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[34] = *new_inst(0x22,1,1,8,new_operand(13,0,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[35] = *new_inst(0x23,2,1,8,new_operand(13,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[36] = *new_inst(0x24,2,1,4,new_operand(7,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[37] = *new_inst(0x25,3,1,4,new_operand(7,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[38] = *new_inst(0x26,1,2,8,new_operand(7,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[39] = *new_inst(0x27,11,1,4,NULL,NULL,true,0b0,0b100000);
+	(*unprefixed_list)[40] = *new_inst(0x28,9,2,12,new_operand(99,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[41] = *new_inst(0x29,5,1,8,new_operand(13,0,true),new_operand(13,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[42] = *new_inst(0x2A,1,1,8,new_operand(4,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[43] = *new_inst(0x2B,3,1,8,new_operand(13,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[44] = *new_inst(0x2C,2,1,4,new_operand(3,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[45] = *new_inst(0x2D,3,1,4,new_operand(3,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[46] = *new_inst(0x2E,1,2,8,new_operand(3,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[47] = *new_inst(0x2F,12,1,4,NULL,NULL,true,0b1100000,0b0);
+	(*unprefixed_list)[48] = *new_inst(0x30,9,2,12,new_operand(99,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[49] = *new_inst(0x31,1,3,12,new_operand(9,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[50] = *new_inst(0x32,1,1,8,new_operand(13,0,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[51] = *new_inst(0x33,2,1,8,new_operand(9,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[52] = *new_inst(0x34,2,1,12,new_operand(13,0,false),NULL,false,0b0,0b1000000);
+	(*unprefixed_list)[53] = *new_inst(0x35,3,1,12,new_operand(13,0,false),NULL,false,0b1000000,0b0);
+	(*unprefixed_list)[54] = *new_inst(0x36,1,2,12,new_operand(13,0,false),new_operand(14,1,true),false,0b0,0b0);
+	(*unprefixed_list)[55] = *new_inst(0x37,13,1,4,NULL,NULL,true,0b10000,0b1100000);
+	(*unprefixed_list)[56] = *new_inst(0x38,9,2,12,new_operand(1,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[57] = *new_inst(0x39,5,1,8,new_operand(13,0,true),new_operand(9,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[58] = *new_inst(0x3A,1,1,8,new_operand(4,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[59] = *new_inst(0x3B,3,1,8,new_operand(9,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[60] = *new_inst(0x3C,2,1,4,new_operand(4,0,true),NULL,true,0b0,0b1000000);
+	(*unprefixed_list)[61] = *new_inst(0x3D,3,1,4,new_operand(4,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[62] = *new_inst(0x3E,1,2,8,new_operand(4,0,true),new_operand(14,1,true),true,0b0,0b0);
+	(*unprefixed_list)[63] = *new_inst(0x3F,14,1,4,NULL,NULL,true,0b0,0b1100000);
+	(*unprefixed_list)[64] = *new_inst(0x40,1,1,4,new_operand(5,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[65] = *new_inst(0x41,1,1,4,new_operand(5,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[66] = *new_inst(0x42,1,1,4,new_operand(5,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[67] = *new_inst(0x43,1,1,4,new_operand(5,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[68] = *new_inst(0x44,1,1,4,new_operand(5,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[69] = *new_inst(0x45,1,1,4,new_operand(5,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[70] = *new_inst(0x46,1,1,8,new_operand(5,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[71] = *new_inst(0x47,1,1,4,new_operand(5,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[72] = *new_inst(0x48,1,1,4,new_operand(1,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[73] = *new_inst(0x49,1,1,4,new_operand(1,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[74] = *new_inst(0x4A,1,1,4,new_operand(1,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[75] = *new_inst(0x4B,1,1,4,new_operand(1,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[76] = *new_inst(0x4C,1,1,4,new_operand(1,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[77] = *new_inst(0x4D,1,1,4,new_operand(1,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[78] = *new_inst(0x4E,1,1,8,new_operand(1,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[79] = *new_inst(0x4F,1,1,4,new_operand(1,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[80] = *new_inst(0x50,1,1,4,new_operand(6,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[81] = *new_inst(0x51,1,1,4,new_operand(6,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[82] = *new_inst(0x52,1,1,4,new_operand(6,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[83] = *new_inst(0x53,1,1,4,new_operand(6,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[84] = *new_inst(0x54,1,1,4,new_operand(6,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[85] = *new_inst(0x55,1,1,4,new_operand(6,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[86] = *new_inst(0x56,1,1,8,new_operand(6,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[87] = *new_inst(0x57,1,1,4,new_operand(6,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[88] = *new_inst(0x58,1,1,4,new_operand(2,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[89] = *new_inst(0x59,1,1,4,new_operand(2,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[90] = *new_inst(0x5A,1,1,4,new_operand(2,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[91] = *new_inst(0x5B,1,1,4,new_operand(2,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[92] = *new_inst(0x5C,1,1,4,new_operand(2,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[93] = *new_inst(0x5D,1,1,4,new_operand(2,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[94] = *new_inst(0x5E,1,1,8,new_operand(2,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[95] = *new_inst(0x5F,1,1,4,new_operand(2,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[96] = *new_inst(0x60,1,1,4,new_operand(7,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[97] = *new_inst(0x61,1,1,4,new_operand(7,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[98] = *new_inst(0x62,1,1,4,new_operand(7,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[99] = *new_inst(0x63,1,1,4,new_operand(7,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[100] = *new_inst(0x64,1,1,4,new_operand(7,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[101] = *new_inst(0x65,1,1,4,new_operand(7,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[102] = *new_inst(0x66,1,1,8,new_operand(7,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[103] = *new_inst(0x67,1,1,4,new_operand(7,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[104] = *new_inst(0x68,1,1,4,new_operand(3,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[105] = *new_inst(0x69,1,1,4,new_operand(3,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[106] = *new_inst(0x6A,1,1,4,new_operand(3,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[107] = *new_inst(0x6B,1,1,4,new_operand(3,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[108] = *new_inst(0x6C,1,1,4,new_operand(3,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[109] = *new_inst(0x6D,1,1,4,new_operand(3,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[110] = *new_inst(0x6E,1,1,8,new_operand(3,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[111] = *new_inst(0x6F,1,1,4,new_operand(3,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[112] = *new_inst(0x70,1,1,8,new_operand(13,0,false),new_operand(5,0,true),false,0b0,0b0);
+	(*unprefixed_list)[113] = *new_inst(0x71,1,1,8,new_operand(13,0,false),new_operand(1,0,true),false,0b0,0b0);
+	(*unprefixed_list)[114] = *new_inst(0x72,1,1,8,new_operand(13,0,false),new_operand(6,0,true),false,0b0,0b0);
+	(*unprefixed_list)[115] = *new_inst(0x73,1,1,8,new_operand(13,0,false),new_operand(2,0,true),false,0b0,0b0);
+	(*unprefixed_list)[116] = *new_inst(0x74,1,1,8,new_operand(13,0,false),new_operand(7,0,true),false,0b0,0b0);
+	(*unprefixed_list)[117] = *new_inst(0x75,1,1,8,new_operand(13,0,false),new_operand(3,0,true),false,0b0,0b0);
+	(*unprefixed_list)[118] = *new_inst(0x76,15,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[119] = *new_inst(0x77,1,1,8,new_operand(13,0,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[120] = *new_inst(0x78,1,1,4,new_operand(4,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*unprefixed_list)[121] = *new_inst(0x79,1,1,4,new_operand(4,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*unprefixed_list)[122] = *new_inst(0x7A,1,1,4,new_operand(4,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*unprefixed_list)[123] = *new_inst(0x7B,1,1,4,new_operand(4,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*unprefixed_list)[124] = *new_inst(0x7C,1,1,4,new_operand(4,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*unprefixed_list)[125] = *new_inst(0x7D,1,1,4,new_operand(4,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*unprefixed_list)[126] = *new_inst(0x7E,1,1,8,new_operand(4,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*unprefixed_list)[127] = *new_inst(0x7F,1,1,4,new_operand(4,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*unprefixed_list)[128] = *new_inst(0x80,5,1,4,new_operand(4,0,true),new_operand(5,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[129] = *new_inst(0x81,5,1,4,new_operand(4,0,true),new_operand(1,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[130] = *new_inst(0x82,5,1,4,new_operand(4,0,true),new_operand(6,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[131] = *new_inst(0x83,5,1,4,new_operand(4,0,true),new_operand(2,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[132] = *new_inst(0x84,5,1,4,new_operand(4,0,true),new_operand(7,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[133] = *new_inst(0x85,5,1,4,new_operand(4,0,true),new_operand(3,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[134] = *new_inst(0x86,5,1,8,new_operand(4,0,true),new_operand(13,0,false),false,0b0,0b1000000);
+	(*unprefixed_list)[135] = *new_inst(0x87,5,1,4,new_operand(4,0,true),new_operand(4,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[136] = *new_inst(0x88,16,1,4,new_operand(4,0,true),new_operand(5,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[137] = *new_inst(0x89,16,1,4,new_operand(4,0,true),new_operand(1,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[138] = *new_inst(0x8A,16,1,4,new_operand(4,0,true),new_operand(6,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[139] = *new_inst(0x8B,16,1,4,new_operand(4,0,true),new_operand(2,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[140] = *new_inst(0x8C,16,1,4,new_operand(4,0,true),new_operand(7,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[141] = *new_inst(0x8D,16,1,4,new_operand(4,0,true),new_operand(3,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[142] = *new_inst(0x8E,16,1,8,new_operand(4,0,true),new_operand(13,0,false),false,0b0,0b1000000);
+	(*unprefixed_list)[143] = *new_inst(0x8F,16,1,4,new_operand(4,0,true),new_operand(4,0,true),true,0b0,0b1000000);
+	(*unprefixed_list)[144] = *new_inst(0x90,17,1,4,new_operand(5,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[145] = *new_inst(0x91,17,1,4,new_operand(1,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[146] = *new_inst(0x92,17,1,4,new_operand(6,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[147] = *new_inst(0x93,17,1,4,new_operand(2,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[148] = *new_inst(0x94,17,1,4,new_operand(7,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[149] = *new_inst(0x95,17,1,4,new_operand(3,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[150] = *new_inst(0x96,17,1,8,new_operand(13,0,false),NULL,false,0b1000000,0b0);
+	(*unprefixed_list)[151] = *new_inst(0x97,17,1,4,new_operand(4,0,true),NULL,true,0b11000000,0b110000);
+	(*unprefixed_list)[152] = *new_inst(0x98,18,1,4,new_operand(4,0,true),new_operand(5,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[153] = *new_inst(0x99,18,1,4,new_operand(4,0,true),new_operand(1,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[154] = *new_inst(0x9A,18,1,4,new_operand(4,0,true),new_operand(6,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[155] = *new_inst(0x9B,18,1,4,new_operand(4,0,true),new_operand(2,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[156] = *new_inst(0x9C,18,1,4,new_operand(4,0,true),new_operand(7,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[157] = *new_inst(0x9D,18,1,4,new_operand(4,0,true),new_operand(3,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[158] = *new_inst(0x9E,18,1,8,new_operand(4,0,true),new_operand(13,0,false),false,0b1000000,0b0);
+	(*unprefixed_list)[159] = *new_inst(0x9F,18,1,4,new_operand(4,0,true),new_operand(4,0,true),true,0b1000000,0b0);
+	(*unprefixed_list)[160] = *new_inst(0xA0,19,1,4,new_operand(5,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[161] = *new_inst(0xA1,19,1,4,new_operand(1,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[162] = *new_inst(0xA2,19,1,4,new_operand(6,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[163] = *new_inst(0xA3,19,1,4,new_operand(2,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[164] = *new_inst(0xA4,19,1,4,new_operand(7,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[165] = *new_inst(0xA5,19,1,4,new_operand(3,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[166] = *new_inst(0xA6,19,1,8,new_operand(13,0,false),NULL,false,0b100000,0b1010000);
+	(*unprefixed_list)[167] = *new_inst(0xA7,19,1,4,new_operand(4,0,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[168] = *new_inst(0xA8,20,1,4,new_operand(5,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[169] = *new_inst(0xA9,20,1,4,new_operand(1,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[170] = *new_inst(0xAA,20,1,4,new_operand(6,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[171] = *new_inst(0xAB,20,1,4,new_operand(2,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[172] = *new_inst(0xAC,20,1,4,new_operand(7,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[173] = *new_inst(0xAD,20,1,4,new_operand(3,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[174] = *new_inst(0xAE,20,1,8,new_operand(13,0,false),NULL,false,0b0,0b1110000);
+	(*unprefixed_list)[175] = *new_inst(0xAF,20,1,4,new_operand(4,0,true),NULL,true,0b10000000,0b1110000);
+	(*unprefixed_list)[176] = *new_inst(0xB0,21,1,4,new_operand(5,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[177] = *new_inst(0xB1,21,1,4,new_operand(1,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[178] = *new_inst(0xB2,21,1,4,new_operand(6,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[179] = *new_inst(0xB3,21,1,4,new_operand(2,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[180] = *new_inst(0xB4,21,1,4,new_operand(7,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[181] = *new_inst(0xB5,21,1,4,new_operand(3,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[182] = *new_inst(0xB6,21,1,8,new_operand(13,0,false),NULL,false,0b0,0b1110000);
+	(*unprefixed_list)[183] = *new_inst(0xB7,21,1,4,new_operand(4,0,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[184] = *new_inst(0xB8,22,1,4,new_operand(5,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[185] = *new_inst(0xB9,22,1,4,new_operand(1,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[186] = *new_inst(0xBA,22,1,4,new_operand(6,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[187] = *new_inst(0xBB,22,1,4,new_operand(2,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[188] = *new_inst(0xBC,22,1,4,new_operand(7,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[189] = *new_inst(0xBD,22,1,4,new_operand(3,0,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[190] = *new_inst(0xBE,22,1,8,new_operand(13,0,false),NULL,false,0b1000000,0b0);
+	(*unprefixed_list)[191] = *new_inst(0xBF,22,1,4,new_operand(4,0,true),NULL,true,0b11000000,0b110000);
+	(*unprefixed_list)[192] = *new_inst(0xC0,23,1,20,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[193] = *new_inst(0xC1,24,1,12,new_operand(11,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[194] = *new_inst(0xC2,25,3,16,new_operand(99,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[195] = *new_inst(0xC3,25,3,16,new_operand(99,2,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[196] = *new_inst(0xC4,26,3,24,new_operand(99,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[197] = *new_inst(0xC5,27,1,16,new_operand(11,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[198] = *new_inst(0xC6,5,2,8,new_operand(4,0,true),new_operand(14,1,true),true,0b0,0b1000000);
+	(*unprefixed_list)[199] = *new_inst(0xC7,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[200] = *new_inst(0xC8,23,1,20,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[201] = *new_inst(0xC9,23,1,16,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[202] = *new_inst(0xCA,25,3,16,new_operand(99,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[203] = *new_inst(0xCB,29,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[204] = *new_inst(0xCC,26,3,24,new_operand(99,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[205] = *new_inst(0xCD,26,3,24,new_operand(99,2,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[206] = *new_inst(0xCE,16,2,8,new_operand(4,0,true),new_operand(14,1,true),true,0b0,0b1000000);
+	(*unprefixed_list)[207] = *new_inst(0xCF,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[208] = *new_inst(0xD0,23,1,20,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[209] = *new_inst(0xD1,24,1,12,new_operand(12,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[210] = *new_inst(0xD2,25,3,16,new_operand(99,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[211] = *new_inst(0xD3,30,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[212] = *new_inst(0xD4,26,3,24,new_operand(99,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[213] = *new_inst(0xD5,27,1,16,new_operand(12,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[214] = *new_inst(0xD6,17,2,8,new_operand(99,1,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[215] = *new_inst(0xD7,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[216] = *new_inst(0xD8,23,1,20,new_operand(1,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[217] = *new_inst(0xD9,31,1,16,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[218] = *new_inst(0xDA,25,3,16,new_operand(1,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[219] = *new_inst(0xDB,32,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[220] = *new_inst(0xDC,26,3,24,new_operand(1,0,true),new_operand(14,2,true),true,0b0,0b0);
+	(*unprefixed_list)[221] = *new_inst(0xDD,33,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[222] = *new_inst(0xDE,18,2,8,new_operand(4,0,true),new_operand(14,1,true),true,0b1000000,0b0);
+	(*unprefixed_list)[223] = *new_inst(0xDF,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[224] = *new_inst(0xE0,34,2,12,new_operand(99,1,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[225] = *new_inst(0xE1,24,1,12,new_operand(13,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[226] = *new_inst(0xE2,1,1,8,new_operand(1,0,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[227] = *new_inst(0xE3,35,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[228] = *new_inst(0xE4,36,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[229] = *new_inst(0xE5,27,1,16,new_operand(13,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[230] = *new_inst(0xE6,19,2,8,new_operand(99,1,true),NULL,true,0b100000,0b1010000);
+	(*unprefixed_list)[231] = *new_inst(0xE7,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[232] = *new_inst(0xE8,5,2,16,new_operand(9,0,true),new_operand(14,1,true),true,0b0,0b11000000);
+	(*unprefixed_list)[233] = *new_inst(0xE9,25,1,4,new_operand(13,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[234] = *new_inst(0xEA,1,3,16,new_operand(99,2,false),new_operand(4,0,true),false,0b0,0b0);
+	(*unprefixed_list)[235] = *new_inst(0xEB,37,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[236] = *new_inst(0xEC,38,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[237] = *new_inst(0xED,39,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[238] = *new_inst(0xEE,20,2,8,new_operand(99,1,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[239] = *new_inst(0xEF,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[240] = *new_inst(0xF0,34,2,12,new_operand(4,0,true),new_operand(14,1,false),false,0b0,0b0);
+	(*unprefixed_list)[241] = *new_inst(0xF1,24,1,12,new_operand(10,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[242] = *new_inst(0xF2,1,1,8,new_operand(4,0,true),new_operand(1,0,false),false,0b0,0b0);
+	(*unprefixed_list)[243] = *new_inst(0xF3,40,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[244] = *new_inst(0xF4,41,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[245] = *new_inst(0xF5,27,1,16,new_operand(10,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[246] = *new_inst(0xF6,21,2,8,new_operand(99,1,true),NULL,true,0b0,0b1110000);
+	(*unprefixed_list)[247] = *new_inst(0xF7,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
+	(*unprefixed_list)[248] = *new_inst(0xF8,1,2,12,new_operand(13,0,true),new_operand(9,0,true),true,0b0,0b11000000);
+	(*unprefixed_list)[249] = *new_inst(0xF9,1,1,8,new_operand(9,0,true),new_operand(13,0,true),true,0b0,0b0);
+	(*unprefixed_list)[250] = *new_inst(0xFA,1,3,16,new_operand(4,0,true),new_operand(14,2,false),false,0b0,0b0);
+	(*unprefixed_list)[251] = *new_inst(0xFB,42,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[252] = *new_inst(0xFC,43,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[253] = *new_inst(0xFD,44,1,4,NULL,NULL,true,0b0,0b0);
+	(*unprefixed_list)[254] = *new_inst(0xFE,22,2,8,new_operand(99,1,true),NULL,true,0b1000000,0b0);
+	(*unprefixed_list)[255] = *new_inst(0xFF,28,1,16,new_operand(99,0,true),NULL,true,0b0,0b0);
 
-	//This is just an example, the real data will be populated by Python
-	unprefixed_list[0] = new_inst(0x00,0,2,4,new_operand(1,1,false),NULL,true,0xff);
-	printf("PAss\n");
 }
 
 void findInstruction(uint16_t address){
@@ -427,7 +683,7 @@ void findInstruction(uint16_t address){
 */
 int main () {
 	// List of all instructions
-	struct Instruction *unprefixed_list;
+	struct Instruction *unprefixed_list = (struct Instruction*)malloc(sizeof(struct Instruction)*256);
 	populate_instructions(&unprefixed_list);
 
 	// Entire Memeory Bank split into sections
@@ -436,6 +692,7 @@ int main () {
 	// All CPU Registers
 	struct registerBank Registers;
 	initRegisters(&Registers);
+	printf("Done with Registers\n");
 
 	//Stores cartidge Metadata
 	struct cart_metadata metadata;
@@ -444,7 +701,6 @@ int main () {
 	readCart(&memoryBank[0]); // memoryBank[0] is the cartridge
 	// Fill metadata object with data from cartidge memory
 	read_cart_metadata(&memoryBank[0],&metadata);
-
 	// Set Program Counter from Metadata
 	// This is a bit of a shortcut, the entrypoint really contains code
 	// In Most cases it is a NOP JMP Low High, though
@@ -453,9 +709,21 @@ int main () {
 
 	// Read Through Entire Cartridge
 	// This will not be the final loop, just for testing purposes
-	while(readRegister16(&Registers,REG_PC)<0x7FFF){
+	while(readRegister16(&Registers,REG_PC)<512){
 		uint16_t current_count = readRegister16(&Registers,REG_PC);
-		printf("%X : %X\n",current_count,memoryBank[0][current_count]);
+		
+		//Right now just prints an instructions mnemonic and skips over the data that it uses
+		// Not sure if it skips over the right amount or now.
+		for(int op_index=0;op_index<256;op_index++){
+			if(unprefixed_list[op_index].opcode == memoryBank[0][current_count]){
+				struct Instruction matched_inst = unprefixed_list[op_index];
+				printf("%X : %s \n",current_count,mnemonics[matched_inst.mne_ID]);
+				current_count = current_count + (matched_inst.bytes-1);
+				break;
+			}
+		}
+
+
 		current_count++;
 		writeRegister16(&Registers,REG_PC,current_count);
 	}
@@ -463,8 +731,5 @@ int main () {
 	//Testing Purposes Only:
 	//testRegisters(&Registers);
 	//printMetadata(&metadata);
-
-	//Free Cartidge Bank, this will have to act on all memory later
-	free (memoryBank[0]);
 	return 0;
 }
