@@ -218,38 +218,140 @@ struct mem_sel get_mem_info(unsigned int address){
 }
 
 
+/*
+// Register Names to Register Bank Index
+#define REG_F 0
+#define REG_C 1
+#define REG_E 2
+#define REG_L 3
+#define REG_A 4
+#define REG_B 5
+#define REG_D 6
+#define REG_H 7
+#define REG_PC 8
+#define REG_SP 9
+#define REG_AF 10
+#define REG_BC 11
+#define REG_DE 12
+#define REG_HL 13
+*/
+
+
 struct registerBank{
-	// 8 bit
-	uint8_t reg_8_bit[8];
-	// 16 Bit Registers
-	uint16_t reg_16_bit[6];
+	// They are all 16-bits
+	// 8-bit registers are read and write with bitshifts
+	uint16_t reg_list[6];
 };
 
-uint8_t readRegister8(struct registerBank *bank,int regID){
-	if(regID>7){
-		printf("Error, Reading 16-bit register but returing 8\n");
-		//Return Lower half
-		return ((*bank).reg_16_bit[regID-8]&0xFF);
+void initRegisters(struct registerBank *bank){
+	for(int i=0; i<6; i++){
+		(*bank).reg_list[i] = (uint16_t)0;
 	}
+}
 
+uint8_t readRegister8(struct registerBank *bank,int regID){
+   switch(regID) {
+   	  //F
+      case 0 :
+         printf("Reading %i \n",(*bank).reg_list[10-8]);
+         return (*bank).reg_list[10-8]&0xFF;
+      //C
+      case 1 :
+      	return (*bank).reg_list[11-8]&0xFF;
+      //E
+      case 2 :
+         return (*bank).reg_list[12-8]&0xFF;
+      //L
+      case 3 :
+         return (*bank).reg_list[13-8]&0xFF;
+      //A
+      case 4 :
+         return ((*bank).reg_list[10-8]&0xFF00)>>8;
+      //B
+      case 5 :
+         return ((*bank).reg_list[11-8]&0xFF00)>>8;
+      //D
+      case 6 :
+      	return ((*bank).reg_list[12-8]&0xFF00)>>8;
+      //H
+      case 7 :
+         return ((*bank).reg_list[13-8]&0xFF00)>>8;
+      default :
+         printf("Error, Reading 16-bit register but returing 8\n");
+         return ((*bank).reg_list[regID-8]&0xFF);
+   }
 	//Normal Operation
-	return (*bank).reg_8_bit[regID];
+	return (*bank).reg_list[regID];
 }
 
 uint16_t readRegister16(struct registerBank *bank,int regID){
 	if(regID<8){
 		printf("Error: Trying To Read 16-bits from 8-bit function\n");
 	}
-	return (*bank).reg_16_bit[regID-8];
+	return (*bank).reg_list[regID-8];
 }
 
 void writeRegister(struct registerBank *bank, int regID, uint8_t data){
 	if(regID<8){
+
 		// 8-bit Register Write
-		(*bank).reg_8_bit[regID] = data;
+	   switch(regID) {
+	   	  //F
+	      case 0 :
+	         (*bank).reg_list[10-8] = ((*bank).reg_list[10-8]&0xFF00)|data;
+	         printf("%i %i %i\n",(*bank).reg_list[10-8],data,(*bank).reg_list[10-8]|data);
+	         break;
+	      //C
+	      case 1 :
+	      	(*bank).reg_list[11-8] = ((*bank).reg_list[11-8]&0xFF00)|data;
+	      	break;
+	      //E
+	      case 2 :
+	         (*bank).reg_list[12-8] = ((*bank).reg_list[12-8]&0xFF00)|data;
+	         break;
+	      //L
+	      case 3 :
+	         (*bank).reg_list[13-8] = ((*bank).reg_list[13-8]&0xFF00)|data;
+	         break;
+	      //A
+	      case 4 :
+	         (*bank).reg_list[10-8] = ((*bank).reg_list[10-8]&0x00FF)|(data<<8);
+	         break;
+	      //B
+	      case 5 :
+	         (*bank).reg_list[11-8] = ((*bank).reg_list[11-8]&0x00FF)|(data<<8);
+	         break;
+	      //D
+	      case 6 :
+	      	(*bank).reg_list[12-8] = ((*bank).reg_list[12-8]&0x00FF)|(data<<8);
+	      	break;
+	      //H
+	      case 7 :
+	         (*bank).reg_list[13-8] = ((*bank).reg_list[13-8]&0x00FF)|(data<<8);
+	         break;
+	    }
+
 	}else{
 		// 16-bit Register Write
-		(*bank).reg_16_bit[regID-8] = data;
+		(*bank).reg_list[regID-8] = data;
+	}
+}
+
+void testRegisters(struct registerBank *bank){
+	// Testing Registers (They work)
+	for(uint8_t i=0; i<8; i++){
+		writeRegister(bank, i, i*2);
+	}
+	for(uint8_t i=0; i<8; i++){
+		printf("%i\n",readRegister8(bank, i));
+	}
+	printf("---------------------\n");
+	// Testing Registers (They work)
+	for(uint8_t i=8; i<14; i++){
+		writeRegister(bank, i, i*2);
+	}
+	for(uint8_t i=8; i<14; i++){
+		printf("%i\n",readRegister16(bank, i));
 	}
 }
 
@@ -274,6 +376,7 @@ int main () {
 
 	// All CPU Registers
 	struct registerBank Registers;
+	initRegisters(&Registers);
 
 	//Stores cartidge Metadata
 	struct cart_metadata metadata;
@@ -283,20 +386,11 @@ int main () {
 	// Fill metadata object with data from cartidge memory
 	read_cart_metadata(&memoryBank[0],&metadata);
 
-	// Testing Registers (They work)
-	for(uint8_t i=0; i<14; i++){
-		writeRegister(&Registers, i, i*2);
-	}
-	for(uint8_t i=0; i<8; i++){
-		printf("%i\n",readRegister8(&Registers, i));
-	}
-	printf("---------------------\n");
-	for(uint8_t i=8; i<14; i++){
-		printf("%i\n",readRegister16(&Registers, i));
-	}
+
 
 
 	//Testing Purposes Only:
+	testRegisters(&Registers);
 	printMetadata(&metadata);
 
 	//Free Cartidge Bank, this will have to act on all memory later
