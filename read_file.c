@@ -1,11 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+// Register Names to Register Bank Index
+#define REG_F 0
+#define REG_C 1
+#define REG_E 2
+#define REG_L 3
+#define REG_A 4
+#define REG_B 5
+#define REG_D 6
+#define REG_H 7
+#define REG_PC 8
+#define REG_SP 9
+#define REG_AF 10
+#define REG_BC 11
+#define REG_DE 12
+#define REG_HL 13
 
 int debug = 0;
 
 // Reads entire cartidge file into cart_buffer
-void readCart(unsigned char** cart_buffer){
+void readCart(uint8_t** cart_buffer){
   FILE * pFile;
   long lSize;
   size_t result;
@@ -19,7 +36,7 @@ void readCart(unsigned char** cart_buffer){
   rewind (pFile);
 
   // allocate memory to contain the whole file:
-  *cart_buffer = (unsigned char*) malloc (sizeof(unsigned char)*lSize);
+  *cart_buffer = (uint8_t*) malloc (sizeof(uint8_t)*lSize);
   if (cart_buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
 
   // copy the file into the buffer:
@@ -30,7 +47,7 @@ void readCart(unsigned char** cart_buffer){
   fclose (pFile);
 }
 
-void read_data_from_cart(unsigned char** cart_buffer, unsigned char** variable, unsigned int location, unsigned int size){
+void read_data_from_cart(uint8_t** cart_buffer, uint8_t** variable, unsigned int location, unsigned int size){
 	for(int i=0; i<size; i++){
 		(*variable)[i] = (*cart_buffer)[i+location];
 	}
@@ -38,61 +55,61 @@ void read_data_from_cart(unsigned char** cart_buffer, unsigned char** variable, 
 
 
 struct cart_metadata {
-	unsigned char* entry_point; 	// Often NOP JP 0x150
-	unsigned char* logo; 		    // Logo data
-	unsigned char* title; 				// The Title
-	unsigned char* cgb;						// Gameboy Color?
+	uint8_t* entry_point; 	// Often NOP JP 0x150
+	uint8_t* logo; 		    // Logo data
+	uint8_t* title; 				// The Title
+	uint8_t* cgb;						// Gameboy Color?
 	// New Licencsee Code? Not sure what this is 0x144-0x145
 	bool sgb;						// Super Gameboy
-	unsigned char* cartidge_type;
-	unsigned char* rom_size;
-	unsigned char* ram_size;
-	unsigned char* destination_code;
-	unsigned char* old_licensee_code;
-	unsigned char* mask_rom_version;
-	unsigned char* header_checksum;
-	unsigned char* global_checksum;
+	uint8_t* cartidge_type;
+	uint8_t* rom_size;
+	uint8_t* ram_size;
+	uint8_t* destination_code;
+	uint8_t* old_licensee_code;
+	uint8_t* mask_rom_version;
+	uint8_t* header_checksum;
+	uint8_t* global_checksum;
 };
 
-void read_cart_metadata(unsigned char** cart_buffer, struct cart_metadata *metadata){
+void read_cart_metadata(uint8_t** cart_buffer, struct cart_metadata *metadata){
 
 	// Allocate Memory in the passed struct and then assign it data
-	metadata->entry_point = (unsigned char*) malloc (sizeof(unsigned char)*4);
+	metadata->entry_point = (uint8_t*) malloc (sizeof(uint8_t)*4);
 	read_data_from_cart(cart_buffer, &metadata->entry_point, 0x100, 4);
 
-	metadata->logo = (unsigned char*) malloc (sizeof(unsigned char)*48);
+	metadata->logo = (uint8_t*) malloc (sizeof(uint8_t)*48);
 	read_data_from_cart(cart_buffer, &metadata->logo, 0x104, 48);
 
-	metadata->title = (unsigned char*) malloc (sizeof(unsigned char)*15);
+	metadata->title = (uint8_t*) malloc (sizeof(uint8_t)*15);
 	read_data_from_cart(cart_buffer, &metadata->title, 0x134, 15);
 
-	metadata->cgb= (unsigned char*) malloc (sizeof(unsigned char)*1);
+	metadata->cgb= (uint8_t*) malloc (sizeof(uint8_t)*1);
 	read_data_from_cart(cart_buffer, &metadata->cgb, 0x143,1);
 
 	//New Licensee Code could go here
 
-	metadata->cartidge_type = (unsigned char*) malloc (sizeof(unsigned char)*1);
+	metadata->cartidge_type = (uint8_t*) malloc (sizeof(uint8_t)*1);
 	read_data_from_cart(cart_buffer, &metadata->cartidge_type, 0x147, 1);
 
-	metadata->rom_size = (unsigned char*) malloc (sizeof(unsigned char)*1);
+	metadata->rom_size = (uint8_t*) malloc (sizeof(uint8_t)*1);
 	read_data_from_cart(cart_buffer, &metadata->rom_size, 0x148, 1);
 
-	metadata->ram_size = (unsigned char*) malloc (sizeof(unsigned char)*1);
+	metadata->ram_size = (uint8_t*) malloc (sizeof(uint8_t)*1);
 	read_data_from_cart(cart_buffer, &metadata->ram_size, 0x149, 1);
 
-	metadata->destination_code = (unsigned char*) malloc (sizeof(unsigned char)*1);
+	metadata->destination_code = (uint8_t*) malloc (sizeof(uint8_t)*1);
 	read_data_from_cart(cart_buffer, &metadata->destination_code, 0x14A, 1);
 
-	metadata->old_licensee_code = (unsigned char*) malloc (sizeof(unsigned char)*1);
+	metadata->old_licensee_code = (uint8_t*) malloc (sizeof(uint8_t)*1);
 	read_data_from_cart(cart_buffer, &metadata->old_licensee_code,0x14B,1);
 
-	metadata->mask_rom_version = (unsigned char*) malloc (sizeof(unsigned char)*2);
+	metadata->mask_rom_version = (uint8_t*) malloc (sizeof(uint8_t)*2);
 	read_data_from_cart(cart_buffer, &metadata->mask_rom_version,0x14C,1);
 
-	metadata->header_checksum = (unsigned char*) malloc (sizeof(unsigned char)*2);
+	metadata->header_checksum = (uint8_t*) malloc (sizeof(uint8_t)*2);
 	read_data_from_cart(cart_buffer, &metadata->header_checksum,0x14D,1);
 
-	metadata->global_checksum = (unsigned char*) malloc (sizeof(unsigned char)*2);
+	metadata->global_checksum = (uint8_t*) malloc (sizeof(uint8_t)*2);
 	read_data_from_cart(cart_buffer, &metadata->global_checksum,0x14E,2);
 }
 
@@ -201,6 +218,41 @@ struct mem_sel get_mem_info(unsigned int address){
 }
 
 
+struct registerBank{
+	// 8 bit
+	uint8_t reg_8_bit[8];
+	// 16 Bit Registers
+	uint16_t reg_16_bit[6];
+};
+
+uint8_t readRegister8(struct registerBank *bank,int regID){
+	if(regID>7){
+		printf("Error, Reading 16-bit register but returing 8\n");
+		//Return Lower half
+		return ((*bank).reg_16_bit[regID-8]&0xFF);
+	}
+
+	//Normal Operation
+	return (*bank).reg_8_bit[regID];
+}
+
+uint16_t readRegister16(struct registerBank *bank,int regID){
+	if(regID<8){
+		printf("Error: Trying To Read 16-bits from 8-bit function\n");
+	}
+	return (*bank).reg_16_bit[regID-8];
+}
+
+void writeRegister(struct registerBank *bank, int regID, uint8_t data){
+	if(regID<8){
+		// 8-bit Register Write
+		(*bank).reg_8_bit[regID] = data;
+	}else{
+		// 16-bit Register Write
+		(*bank).reg_16_bit[regID-8] = data;
+	}
+}
+
 /*
 	Memory Idenifiers:
 	11 : Interrupt Enable Register
@@ -217,18 +269,37 @@ struct mem_sel get_mem_info(unsigned int address){
 	00 : 16KB ROM BANK 00
 */
 int main () {
-  unsigned char *memoryBank[12];
+	// Entire Memeory Bank split into sections
+	uint8_t *memoryBank[12];
 
-  struct cart_metadata metadata;
+	// All CPU Registers
+	struct registerBank Registers;
 
-  // Remember memoryBank[0] is the cartidge bank
-  readCart(&memoryBank[0]);
-  read_cart_metadata(&memoryBank[0],&metadata);
+	//Stores cartidge Metadata
+	struct cart_metadata metadata;
 
-  //Testing Purposes Only:
-  printMetadata(&metadata);
-   
-  //Free Cartidge Bank, this will have to act on all memory later
-  free (memoryBank[0]);
-  return 0;
+	// Read all data from ROM file into cartride
+	readCart(&memoryBank[0]); // memoryBank[0] is the cartridge
+	// Fill metadata object with data from cartidge memory
+	read_cart_metadata(&memoryBank[0],&metadata);
+
+	// Testing Registers (They work)
+	for(uint8_t i=0; i<14; i++){
+		writeRegister(&Registers, i, i*2);
+	}
+	for(uint8_t i=0; i<8; i++){
+		printf("%i\n",readRegister8(&Registers, i));
+	}
+	printf("---------------------\n");
+	for(uint8_t i=8; i<14; i++){
+		printf("%i\n",readRegister16(&Registers, i));
+	}
+
+
+	//Testing Purposes Only:
+	printMetadata(&metadata);
+
+	//Free Cartidge Bank, this will have to act on all memory later
+	free (memoryBank[0]);
+	return 0;
 }
