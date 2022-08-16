@@ -361,6 +361,55 @@ void testRegisters(struct registerBank *bank){
 	}
 }
 
+struct Operand{
+	int regID;
+	uint8_t bytes;
+	bool immediate;
+};
+
+struct Operand* new_operand(int regID, uint8_t bytes, bool immediate) { 
+  struct Operand* p = malloc(sizeof(struct Operand));
+  p->regID = regID;
+  p->bytes = bytes;
+  p->immediate = immediate;
+  return p;
+}
+
+const char *mnemonics[45] = {"NOP", "LD", "INC", "DEC", "RLCA", "ADD", "RRCA", "STOP", "RLA", "JR", "RRA","DAA", "CPL", "SCF", "CCF", "HALT", "ADC","SUB","SBC","AND","XOR","OR","CP","RET","POP","JP","CALL","PUSH","PREFIX","ILLEGAL_D3","RETI","ILLEGAL_BD","ILLEGAL_DD","LDH","ILLEGAL_E3","ILLEGAL_E4","ILLEGAL_EB","ILLEGAL_EC","ILLEGAL_ED","DI","ILLEGAL_F4","EI","ILLEGAL_FC","ILLEGAL_FD"};
+struct Instruction{
+	uint8_t opcode;
+	uint8_t mne_ID;
+	uint8_t bytes;
+	uint8_t cycles;
+	struct Operand *operand0;
+	struct Operand *operand1;
+	bool immediate;
+	uint8_t flags; // Packed into lower 4-bits
+};
+struct Instruction* new_inst(uint8_t opcode, uint8_t mne_ID, uint8_t bytes, uint8_t cycles, struct Operand* operand0, struct Operand* operand1, bool immediate, uint8_t flags){
+	struct Instruction* p = malloc(sizeof(struct Instruction));
+	p->opcode = opcode;
+	p->mne_ID = mne_ID;
+	p->bytes = bytes;
+	p->cycles = cycles;
+	p->operand0 = operand0;
+	p->operand1 = operand1;
+	p->immediate = immediate;
+	p->flags = flags;
+}
+
+void populate_instructions(struct Instruction **unprefixed_list){
+	*unprefixed_list = (struct Instruction*) malloc (sizeof(struct Instruction)*256);
+
+	//This is just an example, the real data will be populated by Python
+	unprefixed_list[0] = new_inst(0x00,0,2,4,new_operand(1,1,false),NULL,true,0xff);
+	printf("PAss\n");
+}
+
+void findInstruction(uint16_t address){
+	printf("0x%X : 0x%X\n",address,0xF0F0);
+}
+
 /*
 	Memory Idenifiers:
 	11 : Interrupt Enable Register
@@ -377,6 +426,10 @@ void testRegisters(struct registerBank *bank){
 	00 : 16KB ROM BANK 00
 */
 int main () {
+	// List of all instructions
+	struct Instruction *unprefixed_list;
+	populate_instructions(&unprefixed_list);
+
 	// Entire Memeory Bank split into sections
 	uint8_t *memoryBank[12];
 
