@@ -178,11 +178,11 @@ void printMetadata(struct cart_metadata *metadata){
 	00 : 16KB ROM BANK 00
 */
 struct mem_sel{
-	int mem_id;
-	int mem_offset;
+	uint8_t mem_id;
+	uint16_t mem_offset;
 };
 
-struct mem_sel get_mem_info(unsigned int address){
+struct mem_sel get_mem_info(uint16_t address){
 	struct mem_sel return_data;
 
 	if(address < 0x4000){
@@ -241,6 +241,7 @@ struct mem_sel get_mem_info(unsigned int address){
 	if(debug>0){
 		printf("Accessed Memory with ID:%i and offset:%i\n",return_data.mem_id,return_data.mem_offset);
 	}
+	return return_data;
 }
 
 
@@ -963,18 +964,6 @@ struct Instruction opcode_to_instruction(struct Instruction **list,uint8_t opcod
 	}
 }
 
-void NOP(struct Operand op1, struct Operand op2);
-void STOP(struct Operand op1, struct Operand op2);
-void JR(struct Operand op1, struct Operand op2);
-void LD(struct Operand op1, struct Operand op2);
-void INC(struct Operand op1, struct Operand op2);
-void DEC(struct Operand op1, struct Operand op2);
-void CALL(struct Operand op1, struct Operand op2);
-void ILLEGAL_E3(struct Operand op1, struct Operand op2);
-void AND(struct Operand op1, struct Operand op2);
-void RET(struct Operand op1, struct Operand op2);
-
-
 /*
 	Memory Idenifiers:
 	11 : Interrupt Enable Register
@@ -1032,13 +1021,26 @@ int main () {
 
 		struct Instruction matched_inst;
 
+		// Request with Address and receive which memory block is being used and the proper offset
+		struct mem_sel mem_req = get_mem_info(readRegister16(&Registers,REG_PC));
+
 		if(prefix_mode == true){
-			matched_inst = opcode_to_instruction(&cbprefixed_list,memoryBank[0][readRegister16(&Registers,REG_PC)]);
+			// The mem_req struct contains the memory block and offset to use
+			matched_inst = opcode_to_instruction(&cbprefixed_list,memoryBank[mem_req.mem_id][mem_req.mem_offset]);
 		}else{
-			matched_inst = opcode_to_instruction(&unprefixed_list,memoryBank[0][readRegister16(&Registers,REG_PC)]);
+			
+			matched_inst = opcode_to_instruction(&unprefixed_list,memoryBank[mem_req.mem_id][mem_req.mem_offset]);
 		}
 		
 		printf("Opcode: %s\n",mnemonics[matched_inst.mne_ID]);
+
+		switch(matched_inst.opcode){
+			case 0x00:
+				//NOP();
+				break;
+			case 0x01:
+				break;
+		}
 
 		advancePC(&Registers,1);
 	}
