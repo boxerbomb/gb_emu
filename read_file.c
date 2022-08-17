@@ -36,6 +36,14 @@
 #define FLAG_C 28
 #define FLAG_NZ 29
 #define FLAG_Z 30
+#define DEC_0 31
+#define DEC_1 32
+#define DEC_2 33
+#define DEC_3 34
+#define DEC_4 35
+#define DEC_5 36
+#define DEC_6 37
+#define DEC_7 38
 
 int debug = 0;
 
@@ -392,7 +400,8 @@ struct Operand* new_operand(int regID, uint8_t bytes, bool immediate) {
   return p;
 }
 
-const char *mnemonics[45] = {"NOP", "LD", "INC", "DEC", "RLCA", "ADD", "RRCA", "STOP", "RLA", "JR", "RRA","DAA", "CPL", "SCF", "CCF", "HALT", "ADC","SUB","SBC","AND","XOR","OR","CP","RET","POP","JP","CALL","PUSH","PREFIX","ILLEGAL_D3","RETI","ILLEGAL_BD","ILLEGAL_DD","LDH","ILLEGAL_E3","ILLEGAL_E4","ILLEGAL_EB","ILLEGAL_EC","ILLEGAL_ED","DI","ILLEGAL_F4","EI","ILLEGAL_FC","ILLEGAL_FD"};
+//                             0     1      2      3      4       5       6      7       8     9      10   11      12     13     14     15      16    17   18     19   20    21   22    23   24    25    26     27    28     29         30         31        32         33         34        35          36           37           38            39       40       41       42          43       44        45     46   47   48   49    50     51     52    53    54    55
+const char *mnemonics[56] = {"NOP", "LD", "INC", "DEC", "RLCA", "ADD", "RRCA", "STOP", "RLA", "JR", "RRA","DAA", "CPL", "SCF", "CCF", "HALT", "ADC","SUB","SBC","AND","XOR","OR","CP","RET","POP","JP","CALL","PUSH","RST","PREFIX","ILLEGAL_D3","RETI","ILLEGAL_BD","ILLEGAL_DD","LDH","ILLEGAL_E3","ILLEGAL_E4","ILLEGAL_EB","ILLEGAL_EC","ILLEGAL_ED","DI","ILLEGAL_F4","EI","ILLEGAL_FC","ILLEGAL_FD","RLC","RRC","RL","RR","SLA","SRA","SWAP","SRL","BIT","RES","SET"};
 struct Instruction{
 	uint8_t opcode;
 	uint8_t mne_ID;
@@ -675,267 +684,296 @@ void populate_instructions(struct Instruction **unprefixed_list,struct Instructi
 	(*unprefixed_list)[253] = *new_inst(0xFD,44,1,4,NULL,NULL,true,0b0,0b0);
 	(*unprefixed_list)[254] = *new_inst(0xFE,22,2,8,new_operand(14,1,true),NULL,true,0b1000000,0b0);
 	(*unprefixed_list)[255] = *new_inst(0xFF,28,1,16,new_operand(26,0,true),NULL,true,0b0,0b0);
-	(*cbprefixed_list)[0] = *new_inst(0x00,0,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[1] = *new_inst(0x01,0,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[2] = *new_inst(0x02,0,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[3] = *new_inst(0x03,0,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[4] = *new_inst(0x04,0,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[5] = *new_inst(0x05,0,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[6] = *new_inst(0x06,0,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[7] = *new_inst(0x07,0,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[8] = *new_inst(0x08,1,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[9] = *new_inst(0x09,1,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[10] = *new_inst(0x0A,1,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[11] = *new_inst(0x0B,1,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[12] = *new_inst(0x0C,1,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[13] = *new_inst(0x0D,1,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[14] = *new_inst(0x0E,1,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[15] = *new_inst(0x0F,1,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[16] = *new_inst(0x10,2,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[17] = *new_inst(0x11,2,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[18] = *new_inst(0x12,2,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[19] = *new_inst(0x13,2,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[20] = *new_inst(0x14,2,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[21] = *new_inst(0x15,2,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[22] = *new_inst(0x16,2,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[23] = *new_inst(0x17,2,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[24] = *new_inst(0x18,3,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[25] = *new_inst(0x19,3,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[26] = *new_inst(0x1A,3,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[27] = *new_inst(0x1B,3,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[28] = *new_inst(0x1C,3,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[29] = *new_inst(0x1D,3,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[30] = *new_inst(0x1E,3,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[31] = *new_inst(0x1F,3,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[32] = *new_inst(0x20,4,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[33] = *new_inst(0x21,4,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[34] = *new_inst(0x22,4,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[35] = *new_inst(0x23,4,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[36] = *new_inst(0x24,4,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[37] = *new_inst(0x25,4,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[38] = *new_inst(0x26,4,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[39] = *new_inst(0x27,4,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[40] = *new_inst(0x28,5,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[41] = *new_inst(0x29,5,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[42] = *new_inst(0x2A,5,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[43] = *new_inst(0x2B,5,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[44] = *new_inst(0x2C,5,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[45] = *new_inst(0x2D,5,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[46] = *new_inst(0x2E,5,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[47] = *new_inst(0x2F,5,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[48] = *new_inst(0x30,6,2,8,new_operand(5,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[49] = *new_inst(0x31,6,2,8,new_operand(1,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[50] = *new_inst(0x32,6,2,8,new_operand(6,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[51] = *new_inst(0x33,6,2,8,new_operand(2,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[52] = *new_inst(0x34,6,2,8,new_operand(7,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[53] = *new_inst(0x35,6,2,8,new_operand(3,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[54] = *new_inst(0x36,6,2,16,new_operand(13,0,false),NULL,false,0b0,0b1110000);
-	(*cbprefixed_list)[55] = *new_inst(0x37,6,2,8,new_operand(4,0,true),NULL,true,0b0,0b1110000);
-	(*cbprefixed_list)[56] = *new_inst(0x38,7,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[57] = *new_inst(0x39,7,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[58] = *new_inst(0x3A,7,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[59] = *new_inst(0x3B,7,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[60] = *new_inst(0x3C,7,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[61] = *new_inst(0x3D,7,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[62] = *new_inst(0x3E,7,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
-	(*cbprefixed_list)[63] = *new_inst(0x3F,7,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
-	(*cbprefixed_list)[64] = *new_inst(0x40,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[65] = *new_inst(0x41,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[66] = *new_inst(0x42,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[67] = *new_inst(0x43,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[68] = *new_inst(0x44,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[69] = *new_inst(0x45,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[70] = *new_inst(0x46,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[71] = *new_inst(0x47,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[72] = *new_inst(0x48,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[73] = *new_inst(0x49,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[74] = *new_inst(0x4A,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[75] = *new_inst(0x4B,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[76] = *new_inst(0x4C,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[77] = *new_inst(0x4D,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[78] = *new_inst(0x4E,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[79] = *new_inst(0x4F,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[80] = *new_inst(0x50,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[81] = *new_inst(0x51,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[82] = *new_inst(0x52,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[83] = *new_inst(0x53,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[84] = *new_inst(0x54,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[85] = *new_inst(0x55,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[86] = *new_inst(0x56,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[87] = *new_inst(0x57,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[88] = *new_inst(0x58,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[89] = *new_inst(0x59,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[90] = *new_inst(0x5A,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[91] = *new_inst(0x5B,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[92] = *new_inst(0x5C,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[93] = *new_inst(0x5D,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[94] = *new_inst(0x5E,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[95] = *new_inst(0x5F,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[96] = *new_inst(0x60,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[97] = *new_inst(0x61,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[98] = *new_inst(0x62,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[99] = *new_inst(0x63,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[100] = *new_inst(0x64,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[101] = *new_inst(0x65,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[102] = *new_inst(0x66,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[103] = *new_inst(0x67,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[104] = *new_inst(0x68,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[105] = *new_inst(0x69,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[106] = *new_inst(0x6A,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[107] = *new_inst(0x6B,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[108] = *new_inst(0x6C,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[109] = *new_inst(0x6D,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[110] = *new_inst(0x6E,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[111] = *new_inst(0x6F,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[112] = *new_inst(0x70,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[113] = *new_inst(0x71,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[114] = *new_inst(0x72,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[115] = *new_inst(0x73,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[116] = *new_inst(0x74,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[117] = *new_inst(0x75,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[118] = *new_inst(0x76,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[119] = *new_inst(0x77,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[120] = *new_inst(0x78,8,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[121] = *new_inst(0x79,8,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[122] = *new_inst(0x7A,8,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[123] = *new_inst(0x7B,8,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[124] = *new_inst(0x7C,8,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[125] = *new_inst(0x7D,8,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[126] = *new_inst(0x7E,8,2,12,new_operand(99,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
-	(*cbprefixed_list)[127] = *new_inst(0x7F,8,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
-	(*cbprefixed_list)[128] = *new_inst(0x80,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[129] = *new_inst(0x81,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[130] = *new_inst(0x82,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[131] = *new_inst(0x83,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[132] = *new_inst(0x84,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[133] = *new_inst(0x85,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[134] = *new_inst(0x86,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[135] = *new_inst(0x87,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[136] = *new_inst(0x88,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[137] = *new_inst(0x89,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[138] = *new_inst(0x8A,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[139] = *new_inst(0x8B,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[140] = *new_inst(0x8C,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[141] = *new_inst(0x8D,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[142] = *new_inst(0x8E,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[143] = *new_inst(0x8F,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[144] = *new_inst(0x90,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[145] = *new_inst(0x91,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[146] = *new_inst(0x92,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[147] = *new_inst(0x93,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[148] = *new_inst(0x94,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[149] = *new_inst(0x95,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[150] = *new_inst(0x96,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[151] = *new_inst(0x97,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[152] = *new_inst(0x98,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[153] = *new_inst(0x99,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[154] = *new_inst(0x9A,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[155] = *new_inst(0x9B,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[156] = *new_inst(0x9C,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[157] = *new_inst(0x9D,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[158] = *new_inst(0x9E,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[159] = *new_inst(0x9F,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[160] = *new_inst(0xA0,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[161] = *new_inst(0xA1,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[162] = *new_inst(0xA2,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[163] = *new_inst(0xA3,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[164] = *new_inst(0xA4,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[165] = *new_inst(0xA5,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[166] = *new_inst(0xA6,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[167] = *new_inst(0xA7,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[168] = *new_inst(0xA8,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[169] = *new_inst(0xA9,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[170] = *new_inst(0xAA,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[171] = *new_inst(0xAB,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[172] = *new_inst(0xAC,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[173] = *new_inst(0xAD,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[174] = *new_inst(0xAE,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[175] = *new_inst(0xAF,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[176] = *new_inst(0xB0,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[177] = *new_inst(0xB1,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[178] = *new_inst(0xB2,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[179] = *new_inst(0xB3,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[180] = *new_inst(0xB4,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[181] = *new_inst(0xB5,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[182] = *new_inst(0xB6,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[183] = *new_inst(0xB7,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[184] = *new_inst(0xB8,9,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[185] = *new_inst(0xB9,9,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[186] = *new_inst(0xBA,9,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[187] = *new_inst(0xBB,9,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[188] = *new_inst(0xBC,9,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[189] = *new_inst(0xBD,9,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[190] = *new_inst(0xBE,9,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[191] = *new_inst(0xBF,9,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[192] = *new_inst(0xC0,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[193] = *new_inst(0xC1,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[194] = *new_inst(0xC2,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[195] = *new_inst(0xC3,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[196] = *new_inst(0xC4,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[197] = *new_inst(0xC5,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[198] = *new_inst(0xC6,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[199] = *new_inst(0xC7,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[200] = *new_inst(0xC8,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[201] = *new_inst(0xC9,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[202] = *new_inst(0xCA,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[203] = *new_inst(0xCB,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[204] = *new_inst(0xCC,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[205] = *new_inst(0xCD,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[206] = *new_inst(0xCE,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[207] = *new_inst(0xCF,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[208] = *new_inst(0xD0,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[209] = *new_inst(0xD1,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[210] = *new_inst(0xD2,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[211] = *new_inst(0xD3,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[212] = *new_inst(0xD4,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[213] = *new_inst(0xD5,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[214] = *new_inst(0xD6,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[215] = *new_inst(0xD7,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[216] = *new_inst(0xD8,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[217] = *new_inst(0xD9,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[218] = *new_inst(0xDA,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[219] = *new_inst(0xDB,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[220] = *new_inst(0xDC,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[221] = *new_inst(0xDD,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[222] = *new_inst(0xDE,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[223] = *new_inst(0xDF,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[224] = *new_inst(0xE0,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[225] = *new_inst(0xE1,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[226] = *new_inst(0xE2,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[227] = *new_inst(0xE3,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[228] = *new_inst(0xE4,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[229] = *new_inst(0xE5,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[230] = *new_inst(0xE6,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[231] = *new_inst(0xE7,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[232] = *new_inst(0xE8,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[233] = *new_inst(0xE9,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[234] = *new_inst(0xEA,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[235] = *new_inst(0xEB,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[236] = *new_inst(0xEC,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[237] = *new_inst(0xED,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[238] = *new_inst(0xEE,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[239] = *new_inst(0xEF,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[240] = *new_inst(0xF0,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[241] = *new_inst(0xF1,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[242] = *new_inst(0xF2,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[243] = *new_inst(0xF3,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[244] = *new_inst(0xF4,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[245] = *new_inst(0xF5,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[246] = *new_inst(0xF6,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[247] = *new_inst(0xF7,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[248] = *new_inst(0xF8,10,2,8,new_operand(99,0,true),new_operand(5,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[249] = *new_inst(0xF9,10,2,8,new_operand(99,0,true),new_operand(1,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[250] = *new_inst(0xFA,10,2,8,new_operand(99,0,true),new_operand(6,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[251] = *new_inst(0xFB,10,2,8,new_operand(99,0,true),new_operand(2,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[252] = *new_inst(0xFC,10,2,8,new_operand(99,0,true),new_operand(7,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[253] = *new_inst(0xFD,10,2,8,new_operand(99,0,true),new_operand(3,0,true),true,0b0,0b0);
-	(*cbprefixed_list)[254] = *new_inst(0xFE,10,2,16,new_operand(99,0,true),new_operand(13,0,false),false,0b0,0b0);
-	(*cbprefixed_list)[255] = *new_inst(0xFF,10,2,8,new_operand(99,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[0] = *new_inst(0x00,45,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[1] = *new_inst(0x01,45,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[2] = *new_inst(0x02,45,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[3] = *new_inst(0x03,45,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[4] = *new_inst(0x04,45,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[5] = *new_inst(0x05,45,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[6] = *new_inst(0x06,45,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[7] = *new_inst(0x07,45,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[8] = *new_inst(0x08,46,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[9] = *new_inst(0x09,46,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[10] = *new_inst(0x0A,46,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[11] = *new_inst(0x0B,46,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[12] = *new_inst(0x0C,46,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[13] = *new_inst(0x0D,46,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[14] = *new_inst(0x0E,46,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[15] = *new_inst(0x0F,46,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[16] = *new_inst(0x10,47,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[17] = *new_inst(0x11,47,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[18] = *new_inst(0x12,47,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[19] = *new_inst(0x13,47,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[20] = *new_inst(0x14,47,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[21] = *new_inst(0x15,47,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[22] = *new_inst(0x16,47,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[23] = *new_inst(0x17,47,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[24] = *new_inst(0x18,48,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[25] = *new_inst(0x19,48,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[26] = *new_inst(0x1A,48,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[27] = *new_inst(0x1B,48,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[28] = *new_inst(0x1C,48,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[29] = *new_inst(0x1D,48,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[30] = *new_inst(0x1E,48,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[31] = *new_inst(0x1F,48,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[32] = *new_inst(0x20,49,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[33] = *new_inst(0x21,49,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[34] = *new_inst(0x22,49,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[35] = *new_inst(0x23,49,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[36] = *new_inst(0x24,49,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[37] = *new_inst(0x25,49,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[38] = *new_inst(0x26,49,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[39] = *new_inst(0x27,49,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[40] = *new_inst(0x28,50,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[41] = *new_inst(0x29,50,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[42] = *new_inst(0x2A,50,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[43] = *new_inst(0x2B,50,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[44] = *new_inst(0x2C,50,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[45] = *new_inst(0x2D,50,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[46] = *new_inst(0x2E,50,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[47] = *new_inst(0x2F,50,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[48] = *new_inst(0x30,51,2,8,new_operand(5,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[49] = *new_inst(0x31,51,2,8,new_operand(1,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[50] = *new_inst(0x32,51,2,8,new_operand(6,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[51] = *new_inst(0x33,51,2,8,new_operand(2,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[52] = *new_inst(0x34,51,2,8,new_operand(7,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[53] = *new_inst(0x35,51,2,8,new_operand(3,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[54] = *new_inst(0x36,51,2,16,new_operand(13,0,false),NULL,false,0b0,0b1110000);
+	(*cbprefixed_list)[55] = *new_inst(0x37,51,2,8,new_operand(4,0,true),NULL,true,0b0,0b1110000);
+	(*cbprefixed_list)[56] = *new_inst(0x38,52,2,8,new_operand(5,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[57] = *new_inst(0x39,52,2,8,new_operand(1,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[58] = *new_inst(0x3A,52,2,8,new_operand(6,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[59] = *new_inst(0x3B,52,2,8,new_operand(2,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[60] = *new_inst(0x3C,52,2,8,new_operand(7,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[61] = *new_inst(0x3D,52,2,8,new_operand(3,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[62] = *new_inst(0x3E,52,2,16,new_operand(13,0,false),NULL,false,0b0,0b1100000);
+	(*cbprefixed_list)[63] = *new_inst(0x3F,52,2,8,new_operand(4,0,true),NULL,true,0b0,0b1100000);
+	(*cbprefixed_list)[64] = *new_inst(0x40,53,2,8,new_operand(31,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[65] = *new_inst(0x41,53,2,8,new_operand(31,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[66] = *new_inst(0x42,53,2,8,new_operand(31,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[67] = *new_inst(0x43,53,2,8,new_operand(31,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[68] = *new_inst(0x44,53,2,8,new_operand(31,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[69] = *new_inst(0x45,53,2,8,new_operand(31,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[70] = *new_inst(0x46,53,2,12,new_operand(31,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[71] = *new_inst(0x47,53,2,8,new_operand(31,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[72] = *new_inst(0x48,53,2,8,new_operand(32,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[73] = *new_inst(0x49,53,2,8,new_operand(32,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[74] = *new_inst(0x4A,53,2,8,new_operand(32,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[75] = *new_inst(0x4B,53,2,8,new_operand(32,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[76] = *new_inst(0x4C,53,2,8,new_operand(32,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[77] = *new_inst(0x4D,53,2,8,new_operand(32,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[78] = *new_inst(0x4E,53,2,12,new_operand(32,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[79] = *new_inst(0x4F,53,2,8,new_operand(32,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[80] = *new_inst(0x50,53,2,8,new_operand(33,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[81] = *new_inst(0x51,53,2,8,new_operand(33,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[82] = *new_inst(0x52,53,2,8,new_operand(33,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[83] = *new_inst(0x53,53,2,8,new_operand(33,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[84] = *new_inst(0x54,53,2,8,new_operand(33,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[85] = *new_inst(0x55,53,2,8,new_operand(33,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[86] = *new_inst(0x56,53,2,12,new_operand(33,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[87] = *new_inst(0x57,53,2,8,new_operand(33,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[88] = *new_inst(0x58,53,2,8,new_operand(34,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[89] = *new_inst(0x59,53,2,8,new_operand(34,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[90] = *new_inst(0x5A,53,2,8,new_operand(34,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[91] = *new_inst(0x5B,53,2,8,new_operand(34,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[92] = *new_inst(0x5C,53,2,8,new_operand(34,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[93] = *new_inst(0x5D,53,2,8,new_operand(34,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[94] = *new_inst(0x5E,53,2,12,new_operand(34,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[95] = *new_inst(0x5F,53,2,8,new_operand(34,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[96] = *new_inst(0x60,53,2,8,new_operand(35,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[97] = *new_inst(0x61,53,2,8,new_operand(35,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[98] = *new_inst(0x62,53,2,8,new_operand(35,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[99] = *new_inst(0x63,53,2,8,new_operand(35,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[100] = *new_inst(0x64,53,2,8,new_operand(35,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[101] = *new_inst(0x65,53,2,8,new_operand(35,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[102] = *new_inst(0x66,53,2,12,new_operand(35,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[103] = *new_inst(0x67,53,2,8,new_operand(35,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[104] = *new_inst(0x68,53,2,8,new_operand(36,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[105] = *new_inst(0x69,53,2,8,new_operand(36,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[106] = *new_inst(0x6A,53,2,8,new_operand(36,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[107] = *new_inst(0x6B,53,2,8,new_operand(36,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[108] = *new_inst(0x6C,53,2,8,new_operand(36,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[109] = *new_inst(0x6D,53,2,8,new_operand(36,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[110] = *new_inst(0x6E,53,2,12,new_operand(36,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[111] = *new_inst(0x6F,53,2,8,new_operand(36,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[112] = *new_inst(0x70,53,2,8,new_operand(37,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[113] = *new_inst(0x71,53,2,8,new_operand(37,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[114] = *new_inst(0x72,53,2,8,new_operand(37,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[115] = *new_inst(0x73,53,2,8,new_operand(37,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[116] = *new_inst(0x74,53,2,8,new_operand(37,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[117] = *new_inst(0x75,53,2,8,new_operand(37,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[118] = *new_inst(0x76,53,2,12,new_operand(37,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[119] = *new_inst(0x77,53,2,8,new_operand(37,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[120] = *new_inst(0x78,53,2,8,new_operand(38,0,true),new_operand(5,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[121] = *new_inst(0x79,53,2,8,new_operand(38,0,true),new_operand(1,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[122] = *new_inst(0x7A,53,2,8,new_operand(38,0,true),new_operand(6,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[123] = *new_inst(0x7B,53,2,8,new_operand(38,0,true),new_operand(2,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[124] = *new_inst(0x7C,53,2,8,new_operand(38,0,true),new_operand(7,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[125] = *new_inst(0x7D,53,2,8,new_operand(38,0,true),new_operand(3,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[126] = *new_inst(0x7E,53,2,12,new_operand(38,0,true),new_operand(13,0,false),false,0b100000,0b1000000);
+	(*cbprefixed_list)[127] = *new_inst(0x7F,53,2,8,new_operand(38,0,true),new_operand(4,0,true),true,0b100000,0b1000000);
+	(*cbprefixed_list)[128] = *new_inst(0x80,54,2,8,new_operand(31,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[129] = *new_inst(0x81,54,2,8,new_operand(31,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[130] = *new_inst(0x82,54,2,8,new_operand(31,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[131] = *new_inst(0x83,54,2,8,new_operand(31,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[132] = *new_inst(0x84,54,2,8,new_operand(31,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[133] = *new_inst(0x85,54,2,8,new_operand(31,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[134] = *new_inst(0x86,54,2,16,new_operand(31,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[135] = *new_inst(0x87,54,2,8,new_operand(31,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[136] = *new_inst(0x88,54,2,8,new_operand(32,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[137] = *new_inst(0x89,54,2,8,new_operand(32,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[138] = *new_inst(0x8A,54,2,8,new_operand(32,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[139] = *new_inst(0x8B,54,2,8,new_operand(32,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[140] = *new_inst(0x8C,54,2,8,new_operand(32,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[141] = *new_inst(0x8D,54,2,8,new_operand(32,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[142] = *new_inst(0x8E,54,2,16,new_operand(32,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[143] = *new_inst(0x8F,54,2,8,new_operand(32,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[144] = *new_inst(0x90,54,2,8,new_operand(33,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[145] = *new_inst(0x91,54,2,8,new_operand(33,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[146] = *new_inst(0x92,54,2,8,new_operand(33,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[147] = *new_inst(0x93,54,2,8,new_operand(33,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[148] = *new_inst(0x94,54,2,8,new_operand(33,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[149] = *new_inst(0x95,54,2,8,new_operand(33,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[150] = *new_inst(0x96,54,2,16,new_operand(33,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[151] = *new_inst(0x97,54,2,8,new_operand(33,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[152] = *new_inst(0x98,54,2,8,new_operand(34,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[153] = *new_inst(0x99,54,2,8,new_operand(34,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[154] = *new_inst(0x9A,54,2,8,new_operand(34,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[155] = *new_inst(0x9B,54,2,8,new_operand(34,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[156] = *new_inst(0x9C,54,2,8,new_operand(34,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[157] = *new_inst(0x9D,54,2,8,new_operand(34,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[158] = *new_inst(0x9E,54,2,16,new_operand(34,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[159] = *new_inst(0x9F,54,2,8,new_operand(34,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[160] = *new_inst(0xA0,54,2,8,new_operand(35,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[161] = *new_inst(0xA1,54,2,8,new_operand(35,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[162] = *new_inst(0xA2,54,2,8,new_operand(35,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[163] = *new_inst(0xA3,54,2,8,new_operand(35,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[164] = *new_inst(0xA4,54,2,8,new_operand(35,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[165] = *new_inst(0xA5,54,2,8,new_operand(35,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[166] = *new_inst(0xA6,54,2,16,new_operand(35,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[167] = *new_inst(0xA7,54,2,8,new_operand(35,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[168] = *new_inst(0xA8,54,2,8,new_operand(36,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[169] = *new_inst(0xA9,54,2,8,new_operand(36,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[170] = *new_inst(0xAA,54,2,8,new_operand(36,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[171] = *new_inst(0xAB,54,2,8,new_operand(36,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[172] = *new_inst(0xAC,54,2,8,new_operand(36,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[173] = *new_inst(0xAD,54,2,8,new_operand(36,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[174] = *new_inst(0xAE,54,2,16,new_operand(36,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[175] = *new_inst(0xAF,54,2,8,new_operand(36,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[176] = *new_inst(0xB0,54,2,8,new_operand(37,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[177] = *new_inst(0xB1,54,2,8,new_operand(37,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[178] = *new_inst(0xB2,54,2,8,new_operand(37,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[179] = *new_inst(0xB3,54,2,8,new_operand(37,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[180] = *new_inst(0xB4,54,2,8,new_operand(37,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[181] = *new_inst(0xB5,54,2,8,new_operand(37,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[182] = *new_inst(0xB6,54,2,16,new_operand(37,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[183] = *new_inst(0xB7,54,2,8,new_operand(37,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[184] = *new_inst(0xB8,54,2,8,new_operand(38,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[185] = *new_inst(0xB9,54,2,8,new_operand(38,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[186] = *new_inst(0xBA,54,2,8,new_operand(38,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[187] = *new_inst(0xBB,54,2,8,new_operand(38,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[188] = *new_inst(0xBC,54,2,8,new_operand(38,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[189] = *new_inst(0xBD,54,2,8,new_operand(38,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[190] = *new_inst(0xBE,54,2,16,new_operand(38,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[191] = *new_inst(0xBF,54,2,8,new_operand(38,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[192] = *new_inst(0xC0,55,2,8,new_operand(31,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[193] = *new_inst(0xC1,55,2,8,new_operand(31,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[194] = *new_inst(0xC2,55,2,8,new_operand(31,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[195] = *new_inst(0xC3,55,2,8,new_operand(31,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[196] = *new_inst(0xC4,55,2,8,new_operand(31,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[197] = *new_inst(0xC5,55,2,8,new_operand(31,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[198] = *new_inst(0xC6,55,2,16,new_operand(31,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[199] = *new_inst(0xC7,55,2,8,new_operand(31,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[200] = *new_inst(0xC8,55,2,8,new_operand(32,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[201] = *new_inst(0xC9,55,2,8,new_operand(32,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[202] = *new_inst(0xCA,55,2,8,new_operand(32,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[203] = *new_inst(0xCB,55,2,8,new_operand(32,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[204] = *new_inst(0xCC,55,2,8,new_operand(32,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[205] = *new_inst(0xCD,55,2,8,new_operand(32,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[206] = *new_inst(0xCE,55,2,16,new_operand(32,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[207] = *new_inst(0xCF,55,2,8,new_operand(32,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[208] = *new_inst(0xD0,55,2,8,new_operand(33,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[209] = *new_inst(0xD1,55,2,8,new_operand(33,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[210] = *new_inst(0xD2,55,2,8,new_operand(33,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[211] = *new_inst(0xD3,55,2,8,new_operand(33,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[212] = *new_inst(0xD4,55,2,8,new_operand(33,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[213] = *new_inst(0xD5,55,2,8,new_operand(33,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[214] = *new_inst(0xD6,55,2,16,new_operand(33,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[215] = *new_inst(0xD7,55,2,8,new_operand(33,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[216] = *new_inst(0xD8,55,2,8,new_operand(34,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[217] = *new_inst(0xD9,55,2,8,new_operand(34,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[218] = *new_inst(0xDA,55,2,8,new_operand(34,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[219] = *new_inst(0xDB,55,2,8,new_operand(34,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[220] = *new_inst(0xDC,55,2,8,new_operand(34,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[221] = *new_inst(0xDD,55,2,8,new_operand(34,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[222] = *new_inst(0xDE,55,2,16,new_operand(34,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[223] = *new_inst(0xDF,55,2,8,new_operand(34,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[224] = *new_inst(0xE0,55,2,8,new_operand(35,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[225] = *new_inst(0xE1,55,2,8,new_operand(35,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[226] = *new_inst(0xE2,55,2,8,new_operand(35,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[227] = *new_inst(0xE3,55,2,8,new_operand(35,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[228] = *new_inst(0xE4,55,2,8,new_operand(35,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[229] = *new_inst(0xE5,55,2,8,new_operand(35,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[230] = *new_inst(0xE6,55,2,16,new_operand(35,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[231] = *new_inst(0xE7,55,2,8,new_operand(35,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[232] = *new_inst(0xE8,55,2,8,new_operand(36,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[233] = *new_inst(0xE9,55,2,8,new_operand(36,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[234] = *new_inst(0xEA,55,2,8,new_operand(36,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[235] = *new_inst(0xEB,55,2,8,new_operand(36,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[236] = *new_inst(0xEC,55,2,8,new_operand(36,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[237] = *new_inst(0xED,55,2,8,new_operand(36,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[238] = *new_inst(0xEE,55,2,16,new_operand(36,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[239] = *new_inst(0xEF,55,2,8,new_operand(36,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[240] = *new_inst(0xF0,55,2,8,new_operand(37,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[241] = *new_inst(0xF1,55,2,8,new_operand(37,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[242] = *new_inst(0xF2,55,2,8,new_operand(37,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[243] = *new_inst(0xF3,55,2,8,new_operand(37,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[244] = *new_inst(0xF4,55,2,8,new_operand(37,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[245] = *new_inst(0xF5,55,2,8,new_operand(37,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[246] = *new_inst(0xF6,55,2,16,new_operand(37,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[247] = *new_inst(0xF7,55,2,8,new_operand(37,0,true),new_operand(4,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[248] = *new_inst(0xF8,55,2,8,new_operand(38,0,true),new_operand(5,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[249] = *new_inst(0xF9,55,2,8,new_operand(38,0,true),new_operand(1,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[250] = *new_inst(0xFA,55,2,8,new_operand(38,0,true),new_operand(6,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[251] = *new_inst(0xFB,55,2,8,new_operand(38,0,true),new_operand(2,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[252] = *new_inst(0xFC,55,2,8,new_operand(38,0,true),new_operand(7,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[253] = *new_inst(0xFD,55,2,8,new_operand(38,0,true),new_operand(3,0,true),true,0b0,0b0);
+	(*cbprefixed_list)[254] = *new_inst(0xFE,55,2,16,new_operand(38,0,true),new_operand(13,0,false),false,0b0,0b0);
+	(*cbprefixed_list)[255] = *new_inst(0xFF,55,2,8,new_operand(38,0,true),new_operand(4,0,true),true,0b0,0b0);
 }
 
 void findInstruction(uint16_t address){
 	printf("0x%X : 0x%X\n",address,0xF0F0);
 }
+
+void advancePC(struct registerBank *bank, uint16_t offset){
+	uint16_t current_count = readRegister16(bank,REG_PC);
+	current_count = current_count + offset;
+	writeRegister16(bank,REG_PC,current_count);
+}
+
+struct Instruction opcode_to_instruction(struct Instruction **list,uint8_t opcode){
+	//Right now just prints an instructions mnemonic and skips over the data that it uses
+	// Not sure if it skips over the right amount or now.
+	for(int op_index=0;op_index<256;op_index++){
+		if((*list)[op_index].opcode == opcode){
+			struct Instruction matched_inst = (*list)[op_index];
+			return matched_inst;
+		}
+	}
+}
+
+void NOP(struct Operand op1, struct Operand op2);
+void STOP(struct Operand op1, struct Operand op2);
+void JR(struct Operand op1, struct Operand op2);
+void LD(struct Operand op1, struct Operand op2);
+void INC(struct Operand op1, struct Operand op2);
+void DEC(struct Operand op1, struct Operand op2);
+void CALL(struct Operand op1, struct Operand op2);
+void ILLEGAL_E3(struct Operand op1, struct Operand op2);
+void AND(struct Operand op1, struct Operand op2);
+void RET(struct Operand op1, struct Operand op2);
+
 
 /*
 	Memory Idenifiers:
@@ -982,26 +1020,29 @@ int main () {
 	// Read Through Entire Cartridge
 	// This will not be the final loop, just for testing purposes
 	while(readRegister16(&Registers,REG_PC)<512){
-		uint16_t current_count = readRegister16(&Registers,REG_PC);
-		
-		//Right now just prints an instructions mnemonic and skips over the data that it uses
-		// Not sure if it skips over the right amount or now.
-		for(int op_index=0;op_index<256;op_index++){
-			if(unprefixed_list[op_index].opcode == memoryBank[0][current_count]){
-				struct Instruction matched_inst = unprefixed_list[op_index];
-				int num_operands = 0;
-				if(matched_inst.operand0 != NULL)num_operands++;
-				if(matched_inst.operand1 != NULL)num_operands++;
-				printf("%X : %s num_ops: %i num_bytes:%i cycles: %i\n",current_count,mnemonics[matched_inst.mne_ID],num_operands,matched_inst.bytes,matched_inst.cycles);
-				current_count = current_count + (matched_inst.bytes-1);
-				break;
-			}
+
+		bool prefix_mode = false;
+		if(memoryBank[0][readRegister16(&Registers,REG_PC)]==0xCB){
+			printf("Prefixed Mode\n");
+			prefix_mode = true;
+			//Move past the prefix
+			advancePC(&Registers, 1);
 		}
 
 
-		current_count++;
-		writeRegister16(&Registers,REG_PC,current_count);
+		struct Instruction matched_inst;
+
+		if(prefix_mode == true){
+			matched_inst = opcode_to_instruction(&cbprefixed_list,memoryBank[0][readRegister16(&Registers,REG_PC)]);
+		}else{
+			matched_inst = opcode_to_instruction(&unprefixed_list,memoryBank[0][readRegister16(&Registers,REG_PC)]);
+		}
+		
+		printf("Opcode: %s\n",mnemonics[matched_inst.mne_ID]);
+
+		advancePC(&Registers,1);
 	}
+
 	
 	//Testing Purposes Only:
 	//testRegisters(&Registers);

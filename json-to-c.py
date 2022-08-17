@@ -57,7 +57,15 @@ REGISTER_LIST = [
 "NC",
 "C",
 "NZ",
-"Z"
+"Z",
+"0",
+"1",
+"2",
+"3",
+"4",
+"5",
+"6",
+"7",
 ]
 
 
@@ -89,7 +97,7 @@ for i in data['unprefixed']:
 			mne_ID = mne_index
 			break
 		mne_index = mne_index + 1
-	
+
 	bytes_num = data['unprefixed'][i]['bytes']
 	cycles = data['unprefixed'][i]['cycles'][0]
 
@@ -196,6 +204,8 @@ for i in data['cbprefixed']:
 			break
 		mne_index = mne_index + 1
 	
+	mne_ID = mne_ID + len(unprefixed_mnemonic_list)
+
 	bytes_num = data['cbprefixed'][i]['bytes']
 	cycles = data['cbprefixed'][i]['cycles'][0]
 
@@ -216,6 +226,10 @@ for i in data['cbprefixed']:
 				break
 			operand0_name_index = operand0_name_index + 1
 
+		if(operand_0_reg_id==99):
+			print("")
+			print("")
+			print("XXXXXXXXXXXX : "+data['cbprefixed'][i]['operands'][0]['name'])
 
 		try:
 			op_0_bytes = operand0_obj['bytes']
